@@ -1,10 +1,3 @@
-//
-//  MovieDetailsManager.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 19.11.24.
-//
-
 import Foundation
 
 class MovieDetailsManager {

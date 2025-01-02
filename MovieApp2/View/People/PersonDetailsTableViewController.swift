@@ -1,21 +1,12 @@
-//
-//  TVSeriesCollectionViewController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 06.12.24.
-//
-
 import UIKit
 
-import UIKit
-
-class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class PersonDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var viewModel = TVSeriesDetailsViewModel()
+    var viewModel = PersonDetailsViewModel()
     private var tableView: UITableView!
     
-    init(_ selectedSeriesId: Int) {
-        self.viewModel.selectedSeriesId = selectedSeriesId
+    init(_ selectedPersonId: Int) {
+        self.viewModel.selectedPersonId = selectedPersonId
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -27,10 +18,10 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        viewModel.fetchTVSeriesDetails()
-        viewModel.success = { [weak self] seriesDetails in
+        viewModel.fetchPersonDetails()
+        viewModel.success = { [weak self] personDetails in
             DispatchQueue.main.async {
-                self?.viewModel.selectedSeries = seriesDetails
+                self?.viewModel.selectedPerson = personDetails
                 self?.setupTableView()
             }
         }
@@ -50,11 +41,8 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         
         tableView.register(ImageCell.self, forCellReuseIdentifier: "BackdropCell")
         tableView.register(TitleCell.self, forCellReuseIdentifier: "TitleCell")
-        tableView.register(InfoCell.self, forCellReuseIdentifier: "InfoCell")
         tableView.register(TextCell.self, forCellReuseIdentifier: "OverviewCell")
-        tableView.register(GenreCell.self, forCellReuseIdentifier: "GenreCell")
-        tableView.register(SeasonAndEpisodesCell.self, forCellReuseIdentifier: "SeasonAndEpisodesCell")
-        tableView.register(DirectorCell.self, forCellReuseIdentifier: "DirectorCell")
+        tableView.register(TextCell.self, forCellReuseIdentifier: "OverviewCell")
         
         view.addSubview(tableView)
         
@@ -71,19 +59,26 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 7
+        return 4
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         switch indexPath.row {
         case 0:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "BackdropCell", for: indexPath) as? ImageCell else {
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-
-            cell.configure(with: viewModel.selectedSeries?.backdropURL ?? "")
+            if let imageURL = viewModel.selectedPerson?.profileImageURL {
+                cell.imageView?.loadImage(imageURL: imageURL.absoluteString)
+            } else {
+                cell.imageView?.image = UIImage(named: "placeholder")
+            }
+            
+            if let imageView = cell.imageView {
+                imageView.layer.cornerRadius = 10
+                imageView.clipsToBounds = true
+            }
             return cell
             
         case 1:
@@ -91,8 +86,7 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-
-            cell.configure(with: viewModel.selectedSeries?.title ?? "Unknown Title")
+            cell.configure(with: viewModel.selectedPerson?.name ?? "Unknown Person")
             return cell
             
         case 2:
@@ -100,53 +94,19 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-
-            cell.configure(with: viewModel.selectedSeries?.overview ?? "No Overview Available")
+            let overviewText = viewModel.selectedPerson?.name != nil ?
+            "\(viewModel.selectedPerson?.name ?? "Unknown Person") was born on \(viewModel.selectedPerson?.birthday ?? "unknown date") in \(viewModel.selectedPerson?.placeOfBirth ?? "unknown place")." :
+            "No Biography Available"
+            cell.configure(with: overviewText)
             return cell
             
         case 3:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "InfoCell", for: indexPath) as? InfoCell else {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "OverviewCell", for: indexPath) as? TextCell else {
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-
-            cell.configure(
-                language: LanguageHelper.languageName(for: viewModel.selectedSeries?.language),
-                popularity: "\(viewModel.selectedSeries?.popularity ?? 0)",
-                rating: "\(viewModel.selectedSeries?.rating ?? 0)/10"
-            )
-            return cell
-            
-        case 4:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "GenreCell", for: indexPath) as? GenreCell else {
-                return UITableViewCell()
-            }
-            cell.selectionStyle = .none
-
-            cell.configure(with: viewModel.selectedSeries?.genres?.map { $0.name }.joined(separator: ", ") ?? "Unknown Genre")
-            return cell
-            
-        case 5:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "SeasonAndEpisodesCell", for: indexPath) as? SeasonAndEpisodesCell else {
-                return UITableViewCell()
-            }
-            cell.selectionStyle = .none
-
-            if let seasonsAndEpisodes = viewModel.selectedSeries?.seasonsAndEpisodes {
-                cell.configure(with: seasonsAndEpisodes)
-            } else {
-                cell.configure(with: "N/A")
-            }
-            
-            return cell
-            
-        case 6:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "DirectorCell", for: indexPath) as? DirectorCell else {
-                return UITableViewCell()
-            }
-            cell.selectionStyle = .none
-
-            cell.configure(with: viewModel.selectedSeries?.productionCompanies?.map { $0.name }.joined(separator: ", ") ?? "No production companies available")
+            cell.textLabel?.textAlignment = .center
+            cell.configure(with: viewModel.selectedPerson?.biography ?? "No Biography Available")
             return cell
             
         default:
@@ -157,7 +117,9 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.row {
         case 0:
-            return 250
+            let screenWidth = UIScreen.main.bounds.width
+            let aspectRatio: CGFloat = 0.75
+            return screenWidth / aspectRatio
         default:
             return UITableView.automaticDimension
         }

@@ -1,10 +1,3 @@
-//
-//  LanguageHelper.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 05.12.24.
-//
-
 import Foundation
 
 struct LanguageHelper {
@@ -43,8 +36,6 @@ struct LanguageHelper {
         guard let code = code, !code.isEmpty else {
             return "Unknown Language"
         }
-        
-        // Dəyişiklik: Yenidən mapdə yoxlama
-        return languageMap[code] ?? code // Əgər kod map-də yoxdursa, özünü qaytaracaq
+        return languageMap[code] ?? code
     }
 }

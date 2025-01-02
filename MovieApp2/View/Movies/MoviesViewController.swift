@@ -1,18 +1,22 @@
-//
-//  HomeViewController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 20.10.24.
-//
-
 import UIKit
 
 class MoviesViewController: UIViewController {
     var viewModel = MoviesViewModel()
     var collectionViews = [UICollectionView]()
     
-    let favoritesButton: FavoritesButton = {
-        let button = FavoritesButton()
+    let favoritesButton: UIButton = {
+        let button = UIButton(type: .system)
+        let filledHeartImage = UIImage(systemName: "heart.fill")
+        button.setImage(filledHeartImage, for: .normal)
+        button.tintColor = .red
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let settingsButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "gear"), for: .normal)
+        button.tintColor = .black
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -47,11 +51,19 @@ class MoviesViewController: UIViewController {
         setupConstraints()
         bindViewModel()
         viewModel.fetchMovies()
-        
-        favoritesButton.onTap = { [weak self] in
-//            let favoritesVC = FavoritesViewController()
-//            self?.navigationController?.pushViewController(favoritesVC, animated: true)
-        }
+                
+        favoritesButton.addTarget(self, action: #selector(favoritesButtonTapped), for: .touchUpInside)
+        settingsButton.addTarget(self, action: #selector(settingsButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc func favoritesButtonTapped() {
+        let favoritesVC = FavoritesViewController()
+        navigationController?.pushViewController(favoritesVC, animated: true)
+    }
+    
+    @objc func settingsButtonTapped() {
+        let settingsVC = SettingsViewController()
+        navigationController?.pushViewController(settingsVC, animated: true)
     }
     
     func bindViewModel() {
@@ -90,6 +102,7 @@ class MoviesViewController: UIViewController {
         view.backgroundColor = .white
         view.addSubview(titleLabel)
         view.addSubview(favoritesButton)
+        view.addSubview(settingsButton)
         view.addSubview(collectionView)
         collectionView.addSubview(contentStackView)
     }
@@ -109,13 +122,16 @@ class MoviesViewController: UIViewController {
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             
-            favoritesButton.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
-            favoritesButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            collectionView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            favoritesButton.topAnchor.constraint(equalTo: settingsButton.topAnchor),
+            favoritesButton.trailingAnchor.constraint(equalTo: settingsButton.leadingAnchor, constant: -16),
+            
+            collectionView.topAnchor.constraint(equalTo: favoritesButton.bottomAnchor, constant: 16),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),

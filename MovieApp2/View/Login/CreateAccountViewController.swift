@@ -1,7 +1,7 @@
 import UIKit
 import FirebaseAuth
 
-class LoginViewController: UIViewController {
+class CreateAccountViewController: UIViewController {
     
     private let emailTextField: UITextField = {
         let textField = UITextField()
@@ -38,35 +38,21 @@ class LoginViewController: UIViewController {
         eyeButton.setImage(eyeImage, for: .normal)
     }
     
-    private let loginButton: UIButton = {
+    private let signUpButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Login", for: .normal)
-        button.backgroundColor = .systemBlue
+        button.setTitle("Sign Up", for: .normal)
+        button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleSignUp), for: .touchUpInside)
         return button
     }()
-    
-    private let createAccountButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Create Account", for: .normal)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(LoginViewController.handleCreateAccount), for: .touchUpInside)
-        return button
-    }()
-    
-    private let viewModel = LoginViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
-        
-        viewModel.errorMessage = { [weak self] message in
-            self?.showErrorAlert(message: message)
-        }
     }
     
     private func setupViews() {
@@ -74,8 +60,7 @@ class LoginViewController: UIViewController {
         view.addSubview(emailTextField)
         view.addSubview(passwordTextField)
         view.addSubview(eyeButton)
-        view.addSubview(loginButton)
-        view.addSubview(createAccountButton)
+        view.addSubview(signUpButton)
     }
     
     private func setupConstraints() {
@@ -95,35 +80,30 @@ class LoginViewController: UIViewController {
             eyeButton.widthAnchor.constraint(equalToConstant: 24),
             eyeButton.heightAnchor.constraint(equalToConstant: 24),
             
-            loginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30),
-            loginButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            loginButton.heightAnchor.constraint(equalToConstant: 48),
-            
-            createAccountButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            createAccountButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 15),
-            createAccountButton.heightAnchor.constraint(equalToConstant: 48)
+            signUpButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            signUpButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30),
+            signUpButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            signUpButton.heightAnchor.constraint(equalToConstant: 48),
         ])
     }
     
-    @objc private func handleLogin() {
-        guard let email = emailTextField.text, let password = passwordTextField.text else {
+    @objc private func handleSignUp() {
+        guard let email = emailTextField.text, let password = passwordTextField.text, !email.isEmpty, !password.isEmpty else {
             showErrorAlert(message: "Please fill in all fields.")
             return
         }
-        viewModel.login(email: email, password: password)
-        let homePageVC = MainTabBarController()
-        navigationController?.pushViewController(homePageVC, animated: true)
+        
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
+            if let error = error {
+                self?.showErrorAlert(message: error.localizedDescription)
+                return
+            }
+            self?.navigateToMainApp()
+        }
     }
     
-    @objc private func handleCreateAccount() {
-        let createAccountVC = CreateAccountViewController()
-        navigationController?.pushViewController(createAccountVC, animated: true)
-    }
-    
-    func navigateToMainTabBar() {
-        guard let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate else { return }
+    private func navigateToMainApp() {
         let mainTabBarController = MainTabBarController()
-        sceneDelegate.window?.rootViewController = mainTabBarController
+        navigationController?.pushViewController(mainTabBarController, animated: true)
     }
 }

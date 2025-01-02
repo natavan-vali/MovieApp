@@ -1,11 +1,3 @@
-//
-//  TVSeriesDetailsViewModel.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 26.11.24.
-//
-
-
 import UIKit
 import Alamofire
 
@@ -14,6 +6,8 @@ class TVSeriesDetailsViewModel {
     var selectedSeries: TVSeries?
     var success: ((TVSeries) -> ())?
     var error: ((String) -> ())?
+    
+    private var favorites: [TVSeries] = []
     
     func fetchTVSeriesDetails() {
         TVSeriesDetailsManager.fetchTVSeriesDetails(id: selectedSeriesId ?? 0) { seriesDetails, errorMessage in
