@@ -1,0 +1,10 @@
+//
+//  Config.xcconfig
+//  MovieApp
+//
+//  Created by Natavan Valiyeva on 20.10.24.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+API_KEY = 4cca7f13106bf39f3d0af6d96fffb3e5
