@@ -1,10 +1,3 @@
-//
-//  PeopleTableViewCell.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 26.11.24.
-//
-
 import UIKit
 
 class PeopleTableViewCell: UITableViewCell {

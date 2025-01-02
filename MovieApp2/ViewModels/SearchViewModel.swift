@@ -1,10 +1,3 @@
-//
-//  SearchViewModel.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 22.11.24.
-//
-
 import Foundation
 
 class SearchViewModel {

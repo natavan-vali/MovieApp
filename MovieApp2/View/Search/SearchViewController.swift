@@ -1,10 +1,3 @@
-//
-//  SearchViewController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 22.10.24.
-//
-
 import UIKit
 
 class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate {

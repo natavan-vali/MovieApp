@@ -1,10 +1,3 @@
-//
-//  SettingsViewControler.swift
-//  MovieApp2
-//
-//  Created by Natavan Valiyeva on 02.01.25.
-//
-
 import UIKit
 import FirebaseAuth
 
@@ -46,7 +39,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // Firebase sessiyanı sonlandır
         do {
             try Auth.auth().signOut()
             navigateToLogin()
@@ -56,7 +48,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     private func navigateToLogin() {
-        // Login ekranına yönləndir
         let loginVC = LoginViewController()
         let navController = UINavigationController(rootViewController: loginVC)
         navController.modalPresentationStyle = .fullScreen

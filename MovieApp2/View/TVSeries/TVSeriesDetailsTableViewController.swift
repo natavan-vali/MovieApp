@@ -1,10 +1,3 @@
-//
-//  TVSeriesCollectionViewController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 06.12.24.
-//
-
 import UIKit
 import FirebaseAuth
 

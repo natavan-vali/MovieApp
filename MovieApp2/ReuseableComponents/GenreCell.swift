@@ -1,10 +1,3 @@
-//
-//  GenreCell.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 09.12.24.
-//
-
 import UIKit
 
 class GenreCell: UITableViewCell {

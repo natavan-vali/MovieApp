@@ -1,10 +1,3 @@
-//
-//  MovieDetailsCollectionViewController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 05.12.24.
-//
-
 import UIKit
 import FirebaseAuth
 

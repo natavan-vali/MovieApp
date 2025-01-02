@@ -1,10 +1,3 @@
-//
-//  ImageAndTitleCell.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 10.12.24.
-//
-
 import UIKit
 
 class ImageAndTitleCell: UITableViewCell {

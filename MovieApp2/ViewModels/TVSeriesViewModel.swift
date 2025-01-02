@@ -1,10 +1,3 @@
-//
-//  TVSeriesViewModel.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 24.10.24.
-//
-
 import Foundation
 
 struct TVSeriesListModel {

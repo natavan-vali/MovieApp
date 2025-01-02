@@ -1,10 +1,3 @@
-//
-//  MainTabBarController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 22.10.24.
-//
-
 import UIKit
 
 class MainTabBarController: UITabBarController {

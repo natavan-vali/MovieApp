@@ -1,10 +1,3 @@
-//
-//  LoginViewController.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 10.12.24.
-//
-
 import UIKit
 import FirebaseAuth
 
@@ -15,6 +8,7 @@ class LoginViewController: UIViewController {
         textField.placeholder = "Enter your email"
         textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.autocapitalizationType = .none
         return textField
     }()
     
@@ -24,8 +18,25 @@ class LoginViewController: UIViewController {
         textField.isSecureTextEntry = true
         textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.autocapitalizationType = .none
         return textField
     }()
+    
+    private let eyeButton: UIButton = {
+        let button = UIButton(type: .custom)
+        let eyeImage = UIImage(systemName: "eye.fill")
+        button.setImage(eyeImage, for: .normal)
+        button.tintColor = .systemGray
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
+        return button
+    }()
+
+    @objc private func togglePasswordVisibility() {
+        passwordTextField.isSecureTextEntry.toggle()
+        let eyeImage = passwordTextField.isSecureTextEntry ? UIImage(systemName: "eye.fill") : UIImage(systemName: "eye.slash.fill")
+        eyeButton.setImage(eyeImage, for: .normal)
+    }
     
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
@@ -34,7 +45,7 @@ class LoginViewController: UIViewController {
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(LoginViewController.self, action: #selector(handleLogin), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
         return button
     }()
     
@@ -62,6 +73,7 @@ class LoginViewController: UIViewController {
         view.backgroundColor = .white
         view.addSubview(emailTextField)
         view.addSubview(passwordTextField)
+        view.addSubview(eyeButton)
         view.addSubview(loginButton)
         view.addSubview(createAccountButton)
     }
@@ -77,6 +89,11 @@ class LoginViewController: UIViewController {
             passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 20),
             passwordTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             passwordTextField.heightAnchor.constraint(equalToConstant: 48),
+            
+            eyeButton.centerYAnchor.constraint(equalTo: passwordTextField.centerYAnchor),
+            eyeButton.trailingAnchor.constraint(equalTo: passwordTextField.trailingAnchor, constant: -10),
+            eyeButton.widthAnchor.constraint(equalToConstant: 24),
+            eyeButton.heightAnchor.constraint(equalToConstant: 24),
             
             loginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30),
@@ -94,8 +111,9 @@ class LoginViewController: UIViewController {
             showErrorAlert(message: "Please fill in all fields.")
             return
         }
-        
         viewModel.login(email: email, password: password)
+        let homePageVC = MainTabBarController()
+        navigationController?.pushViewController(homePageVC, animated: true)
     }
     
     @objc private func handleCreateAccount() {

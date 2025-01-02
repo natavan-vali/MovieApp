@@ -1,10 +1,3 @@
-//
-//  Film.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 20.10.24.
-//
-
 import Foundation
 
 struct Movie: Codable, ContentCollectionViewCellProtocol {

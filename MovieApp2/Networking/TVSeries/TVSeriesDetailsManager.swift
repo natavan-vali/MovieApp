@@ -1,10 +1,3 @@
-//
-//  TVSeriesDetailsManager.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 26.11.24.
-//
-
 import Foundation
 
 class TVSeriesDetailsManager {

@@ -1,10 +1,3 @@
-//
-//  Extension.swift
-//  MovieApp
-//
-//  Created by Natavan Valiyeva on 24.10.24.
-//
-
 import UIKit
 import Kingfisher
 
