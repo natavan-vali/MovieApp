@@ -16,14 +16,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         
-        guard let windowScene = (scene as? UIWindowScene) else { return }
+        guard (scene is UIWindowScene) else { return }
         
-        if let user = Auth.auth().currentUser {
+        if Auth.auth().currentUser != nil {
             let mainViewController = MainTabBarController()
             window?.rootViewController = mainViewController
         } else {
-            let loginViewController = LoginViewController()
-            window?.rootViewController = loginViewController
+            let navigationController = UINavigationController(rootViewController: LoginViewController())
+            window?.rootViewController = navigationController
         }
         window?.makeKeyAndVisible()
     }

@@ -6,13 +6,19 @@
 //
 
 import UIKit
-
-import UIKit
+import FirebaseAuth
 
 class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var viewModel = TVSeriesDetailsViewModel()
     private var tableView: UITableView!
+    var favoritesViewModel = FavoritesViewModel()
+    
+    let favoritesButton: FavoritesButton = {
+        let button = FavoritesButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     init(_ selectedSeriesId: Int) {
         self.viewModel.selectedSeriesId = selectedSeriesId
@@ -27,7 +33,11 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         super.viewDidLoad()
         view.backgroundColor = .white
         
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        
         viewModel.fetchTVSeriesDetails()
+        
         viewModel.success = { [weak self] seriesDetails in
             DispatchQueue.main.async {
                 self?.viewModel.selectedSeries = seriesDetails
@@ -35,10 +45,44 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
             }
         }
         
-        viewModel.error = { [weak self] errorMessage in
-            guard let self = self else { return }
-            self.showErrorAlert(message: errorMessage)
+        favoritesViewModel.fetchFavorites(userId)
+        
+        favoritesViewModel.success = {
+            DispatchQueue.main.async {
+                self.updateFavoritesButtonState()
+            }
         }
+        
+        viewModel.error = { [weak self] errorMessage in
+            self?.showErrorAlert(message: errorMessage)
+        }
+
+        favoritesButton.onTap = { [weak self] in
+            guard let self = self, let series = self.viewModel.selectedSeries else { return }
+            
+            let seriesData = MediaData(id: series.id,
+                                      title: series.title ?? "",
+                                      type: "series",
+                                      posterURL: series.posterURL)
+            
+            if self.favoritesViewModel.favorites.contains(where: { $0.id == seriesData.id }) {
+                self.favoritesViewModel.removeFromFavorites(seriesData, userId)
+                self.favoritesButton.setFavoriteState(false)
+            } else {
+                self.favoritesViewModel.addToFavorites(seriesData, userId)
+                self.favoritesButton.setFavoriteState(true)
+            }
+        }
+        
+        let favoritesBarButtonItem = UIBarButtonItem(customView: favoritesButton)
+        navigationItem.rightBarButtonItem = favoritesBarButtonItem
+    }
+    
+    private func updateFavoritesButtonState() {
+        guard let series = viewModel.selectedSeries else { return }
+            
+        let isFavorite = favoritesViewModel.favorites.contains(where: { $0.id == series.id })
+        favoritesButton.setFavoriteState(isFavorite)
     }
     
     private func setupTableView() {

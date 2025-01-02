@@ -6,121 +6,106 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
-    var emailTextField: UITextField!
-    var passwordTextField: UITextField!
-    var loginButton: UIButton!
-    var viewModel: LoginViewModel!
-    var scrollView: UIScrollView!
+    private let emailTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Enter your email"
+        textField.borderStyle = .roundedRect
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+    
+    private let passwordTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Enter your password"
+        textField.isSecureTextEntry = true
+        textField.borderStyle = .roundedRect
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+    
+    private let loginButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Login", for: .normal)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 8
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(LoginViewController.self, action: #selector(handleLogin), for: .touchUpInside)
+        return button
+    }()
+    
+    private let createAccountButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Create Account", for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(LoginViewController.handleCreateAccount), for: .touchUpInside)
+        return button
+    }()
+    
+    private let viewModel = LoginViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupViews()
+        setupConstraints()
         
-        viewModel = LoginViewModel()
-        viewModel.updateErrorMessage = { [weak self] in
-            self?.showErrorAlert(message: self?.viewModel.errorMessage ?? "Unknown error")
+        viewModel.errorMessage = { [weak self] message in
+            self?.showErrorAlert(message: message)
         }
-        viewModel.updateLoginButtonState = { [weak self] in
-            self?.loginButton.isEnabled = self?.viewModel.isLoginEnabled ?? false
-        }
-        
-        setupUI()
-        registerForKeyboardNotifications()
     }
     
-    private func setupUI() {
+    private func setupViews() {
         view.backgroundColor = .white
-        
-        scrollView = UIScrollView(frame: view.bounds)
-            scrollView.contentSize = CGSize(width: view.frame.width, height: view.frame.height + 200) // Kontentin ölçüsünü artırın
-            view.addSubview(scrollView)
-
-            // İçərisində bir UIView yaradın
-            let contentView = UIView(frame: scrollView.bounds)
-            scrollView.addSubview(contentView)
-        
-        emailTextField = UITextField()
-        emailTextField.placeholder = "Email"
-        emailTextField.borderStyle = .roundedRect
-        emailTextField.keyboardType = .emailAddress
-        emailTextField.addTarget(self, action: #selector(emailTextChanged), for: .editingChanged)
-        contentView.addSubview(emailTextField)
-        
-        passwordTextField = UITextField()
-        passwordTextField.placeholder = "Password"
-        passwordTextField.borderStyle = .roundedRect
-        passwordTextField.isSecureTextEntry = true
-        passwordTextField.addTarget(self, action: #selector(passwordTextChanged), for: .editingChanged)
-        contentView.addSubview(passwordTextField)
-        
-//        errorLabel = UILabel()
-//        errorLabel.textColor = .red
-//        errorLabel.textAlignment = .center
-//        errorLabel.isHidden = true
-//        contentView.addSubview(errorLabel)
-//        
-        loginButton = UIButton()
-        loginButton.setTitle("Login", for: .normal)
-        loginButton.backgroundColor = .blue
-        loginButton.layer.cornerRadius = 5
-        loginButton.isEnabled = false
-        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
-        contentView.addSubview(loginButton)
+        view.addSubview(emailTextField)
+        view.addSubview(passwordTextField)
+        view.addSubview(loginButton)
+        view.addSubview(createAccountButton)
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        let screenWidth = view.bounds.size.width
-        
-        emailTextField.frame = CGRect(x: 20, y: 150, width: screenWidth - 40, height: 40)
-        passwordTextField.frame = CGRect(x: 20, y: 210, width: screenWidth - 40, height: 40)
-//        errorLabel.frame = CGRect(x: 20, y: 270, width: screenWidth - 40, height: 40)
-        loginButton.frame = CGRect(x: 20, y: 320, width: screenWidth - 40, height: 50)
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            emailTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emailTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -80),
+            emailTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            emailTextField.heightAnchor.constraint(equalToConstant: 48),
+            
+            passwordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 20),
+            passwordTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            passwordTextField.heightAnchor.constraint(equalToConstant: 48),
+            
+            loginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30),
+            loginButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            loginButton.heightAnchor.constraint(equalToConstant: 48),
+            
+            createAccountButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            createAccountButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 15),
+            createAccountButton.heightAnchor.constraint(equalToConstant: 48)
+        ])
     }
     
-    @objc private func emailTextChanged() {
-        if let email = emailTextField.text, isValidEmail(email) {
-            viewModel.email = email
-        } else {
-            viewModel.email = nil
+    @objc private func handleLogin() {
+        guard let email = emailTextField.text, let password = passwordTextField.text else {
+            showErrorAlert(message: "Please fill in all fields.")
+            return
         }
+        
+        viewModel.login(email: email, password: password)
     }
     
-    @objc private func passwordTextChanged() {
-        viewModel.password = passwordTextField.text
+    @objc private func handleCreateAccount() {
+        let createAccountVC = CreateAccountViewController()
+        navigationController?.pushViewController(createAccountVC, animated: true)
     }
     
-    @objc private func loginButtonTapped() {
-        viewModel.login()
-    }
-    
-    func isValidEmail(_ email: String) -> Bool {
-        let emailRegEx = "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
-        let emailTest = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
-        return emailTest.evaluate(with: email)
-    }
-    
-    func registerForKeyboardNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
-
-    @objc func keyboardWillShow(_ notification: Notification) {
-        if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            let keyboardHeight = keyboardFrame.height
-            scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
-            scrollView.scrollIndicatorInsets = scrollView.contentInset
-        }
-    }
-
-    @objc func keyboardWillHide(_ notification: Notification) {
-        scrollView.contentInset = .zero
-        scrollView.scrollIndicatorInsets = .zero
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+    func navigateToMainTabBar() {
+        guard let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate else { return }
+        let mainTabBarController = MainTabBarController()
+        sceneDelegate.window?.rootViewController = mainTabBarController
     }
 }

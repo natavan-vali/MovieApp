@@ -6,11 +6,13 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var viewModel = MovieDetailsViewModel()
     private var tableView: UITableView!
+    var favoritesViewModel = FavoritesViewModel()
     
     let favoritesButton: FavoritesButton = {
         let button = FavoritesButton()
@@ -31,24 +33,55 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
         super.viewDidLoad()
         view.backgroundColor = .white
         
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
         viewModel.fetchMovieDetails()
+        
         viewModel.success = { [weak self] movieDetails in
             DispatchQueue.main.async {
                 self?.viewModel.selectedMovie = movieDetails
                 self?.setupTableView()
             }
         }
-        favoritesButton.onTap = { [weak self] in
-            //
+        
+        favoritesViewModel.fetchFavorites(userId)
+        
+        favoritesViewModel.success = {
+            DispatchQueue.main.async {
+                self.updateFavoritesButtonState()
+            }
         }
         
         viewModel.error = { [weak self] errorMessage in
-            guard let self = self else { return }
-            self.showErrorAlert(message: errorMessage)
+            self?.showErrorAlert(message: errorMessage)
+        }
+
+        favoritesButton.onTap = { [weak self] in
+            guard let self = self, let movie = self.viewModel.selectedMovie else { return }
+            
+            let movieData = MediaData(id: movie.id,
+                                      title: movie.title ?? "",
+                                      type: "movie",
+                                      posterURL: movie.posterURL)
+            
+            if self.favoritesViewModel.favorites.contains(where: { $0.id == movieData.id }) {
+                self.favoritesViewModel.removeFromFavorites(movieData, userId)
+                self.favoritesButton.setFavoriteState(false)
+            } else {
+                self.favoritesViewModel.addToFavorites(movieData, userId)
+                self.favoritesButton.setFavoriteState(true)
+            }
         }
         
         let favoritesBarButtonItem = UIBarButtonItem(customView: favoritesButton)
         navigationItem.rightBarButtonItem = favoritesBarButtonItem
+    }
+    
+    private func updateFavoritesButtonState() {
+        guard let movie = viewModel.selectedMovie else { return }
+            
+        let isFavorite = favoritesViewModel.favorites.contains(where: { $0.id == movie.id })
+        favoritesButton.setFavoriteState(isFavorite)
     }
     
     private func setupTableView() {
@@ -92,7 +125,6 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             cell.configure(with: viewModel.selectedMovie?.backdropURL ?? "")
             return cell
             
@@ -101,7 +133,6 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             cell.configure(with: viewModel.selectedMovie?.title ?? "Unknown Title")
             return cell
             
@@ -110,7 +141,6 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             cell.configure(with: viewModel.selectedMovie?.overview ?? "No Overview Available")
             return cell
             
@@ -119,7 +149,6 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             cell.configure(
                 language: LanguageHelper.languageName(for: viewModel.selectedMovie?.language),
                 popularity: "\(viewModel.selectedMovie?.popularity ?? 0)",
@@ -132,7 +161,6 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             cell.configure(with: viewModel.selectedMovie?.genres?.map { $0.name }.joined(separator: ", ") ?? "Unknown Genre")
             return cell
             
@@ -141,13 +169,11 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             if let runtime = viewModel.selectedMovie?.runtime {
                 cell.configure(with: "\(runtime) min")
             } else {
                 cell.configure(with: "N/A")
             }
-            
             return cell
             
         case 6:
@@ -155,7 +181,6 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                 return UITableViewCell()
             }
             cell.selectionStyle = .none
-            
             cell.configure(with: viewModel.selectedMovie?.productionCompanies?.map { $0.name }.joined(separator: ", ") ?? "No production companies available")
             return cell
             
