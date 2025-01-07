@@ -1,5 +1,4 @@
 import Foundation
-import FirebaseAuth
 
 class LoginViewModel {
     
@@ -13,12 +12,13 @@ class LoginViewModel {
             return
         }
         
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
-            if let error = error {
+        AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
+            switch result {
+            case .success:
+                self?.navigateToMainTabBar?()
+            case .failure(let error):
                 self?.errorMessage?(error.localizedDescription)
-                return
             }
-            self?.navigateToMainTabBar?()
         }
     }
 }

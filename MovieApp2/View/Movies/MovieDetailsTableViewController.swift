@@ -1,11 +1,10 @@
 import UIKit
-import FirebaseAuth
 
 class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var viewModel = MovieDetailsViewModel()
     private var tableView: UITableView!
-    var favoritesViewModel = FavoritesViewModel()
+    var favorites: [MediaData] = []
     
     let favoritesButton: FavoritesButton = {
         let button = FavoritesButton()
@@ -26,29 +25,31 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        guard let userId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = AuthManager.shared.getCurrentUserId() else { return }
         
         viewModel.fetchMovieDetails()
+        
+        FirebaseManager.shared.fetchFavorites(userId) { [weak self] favorites, error in
+            if let error = error {
+                print("Error fetching favorites: \(error.localizedDescription)")
+                return
+            }
+            self?.favorites = favorites ?? []
+            self?.updateFavoritesButtonState(with: self?.favorites ?? [])
+        }
         
         viewModel.success = { [weak self] movieDetails in
             DispatchQueue.main.async {
                 self?.viewModel.selectedMovie = movieDetails
                 self?.setupTableView()
-            }
-        }
-        
-        favoritesViewModel.fetchFavorites(userId)
-        
-        favoritesViewModel.success = {
-            DispatchQueue.main.async {
-                self.updateFavoritesButtonState()
+                self?.updateFavoritesButtonState(with: self?.favorites ?? [])
             }
         }
         
         viewModel.error = { [weak self] errorMessage in
             self?.showErrorAlert(message: errorMessage)
         }
-
+        
         favoritesButton.onTap = { [weak self] in
             guard let self = self, let movie = self.viewModel.selectedMovie else { return }
             
@@ -56,13 +57,23 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                                       title: movie.title ?? "",
                                       type: "movie",
                                       posterURL: movie.posterURL)
-            
-            if self.favoritesViewModel.favorites.contains(where: { $0.id == movieData.id }) {
-                self.favoritesViewModel.removeFromFavorites(movieData, userId)
-                self.favoritesButton.setFavoriteState(false)
+                        
+            if self.favorites.contains(where: { $0.id == movieData.id }) {
+                FirebaseManager.shared.removeFavorite(movieData.id, userId) { error in
+                    if let error = error {
+                        print("Error removing favorite: \(error.localizedDescription)")
+                    } else {
+                        self.favoritesButton.setFavoriteState(false)
+                    }
+                }
             } else {
-                self.favoritesViewModel.addToFavorites(movieData, userId)
-                self.favoritesButton.setFavoriteState(true)
+                FirebaseManager.shared.addFavorite(movieData, userId) { error in
+                    if let error = error {
+                        print("Error adding favorite: \(error.localizedDescription)")
+                    } else {
+                        self.favoritesButton.setFavoriteState(true)
+                    }
+                }
             }
         }
         
@@ -70,10 +81,9 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
         navigationItem.rightBarButtonItem = favoritesBarButtonItem
     }
     
-    private func updateFavoritesButtonState() {
+    private func updateFavoritesButtonState(with favorites: [MediaData]) {
         guard let movie = viewModel.selectedMovie else { return }
-            
-        let isFavorite = favoritesViewModel.favorites.contains(where: { $0.id == movie.id })
+        let isFavorite = favorites.contains(where: { $0.id == movie.id })
         favoritesButton.setFavoriteState(isFavorite)
     }
     
@@ -102,6 +112,7 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
+    
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1

@@ -1,6 +1,4 @@
 import UIKit
-import FirebaseFirestore
-import FirebaseAuth
 
 class FavoritesViewController: UIViewController {
     
@@ -29,7 +27,7 @@ class FavoritesViewController: UIViewController {
     }
     
     private func fetchFavorites() {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = AuthManager.shared.getCurrentUserId() else { return }
         
         viewModel.fetchFavorites(userId)
         
