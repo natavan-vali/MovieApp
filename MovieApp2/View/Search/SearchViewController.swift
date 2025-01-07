@@ -21,6 +21,9 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
     private func setupUI() {
         view.backgroundColor = .white
         
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGestureRecognizer)
+        
         searchBar.delegate = self
         searchBar.placeholder = "Search for movies"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
@@ -42,6 +45,10 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     private func bindViewModel() {

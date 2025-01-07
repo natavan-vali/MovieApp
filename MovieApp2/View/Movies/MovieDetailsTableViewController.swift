@@ -8,6 +8,7 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
     
     let favoritesButton: FavoritesButton = {
         let button = FavoritesButton()
+        button.isHidden = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -36,13 +37,13 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
             }
             self?.favorites = favorites ?? []
             self?.updateFavoritesButtonState(with: self?.favorites ?? [])
+            self?.favoritesButton.isHidden = false
         }
         
         viewModel.success = { [weak self] movieDetails in
             DispatchQueue.main.async {
                 self?.viewModel.selectedMovie = movieDetails
                 self?.setupTableView()
-                self?.updateFavoritesButtonState(with: self?.favorites ?? [])
             }
         }
         
@@ -52,21 +53,24 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
         
         favoritesButton.onTap = { [weak self] in
             guard let self = self, let movie = self.viewModel.selectedMovie else { return }
-            
-            let movieData = MediaData(id: movie.id,
-                                      title: movie.title ?? "",
-                                      type: "movie",
-                                      posterURL: movie.posterURL)
                         
-            if self.favorites.contains(where: { $0.id == movieData.id }) {
-                FirebaseManager.shared.removeFavorite(movieData.id, userId) { error in
+            if self.favorites.contains(where: { $0.id == movie.id }) {
+                FirebaseManager.shared.removeFavorite(movie.id, userId) { error in
                     if let error = error {
                         print("Error removing favorite: \(error.localizedDescription)")
                     } else {
                         self.favoritesButton.setFavoriteState(false)
                     }
                 }
+                
+                favorites.removeAll(where: { $0.id == movie.id })
             } else {
+                let movieData = MediaData(id: movie.id,
+                                          title: movie.title ?? "",
+                                          type: "movie",
+                                          posterURL: movie.posterURL,
+                                          createdAt: Date())
+                
                 FirebaseManager.shared.addFavorite(movieData, userId) { error in
                     if let error = error {
                         print("Error adding favorite: \(error.localizedDescription)")
@@ -74,6 +78,8 @@ class MovieDetailsTableViewController: UIViewController, UITableViewDelegate, UI
                         self.favoritesButton.setFavoriteState(true)
                     }
                 }
+                
+                favorites.append(movieData)
             }
         }
         
