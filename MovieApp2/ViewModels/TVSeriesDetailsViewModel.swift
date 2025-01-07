@@ -1,5 +1,4 @@
 import UIKit
-import Alamofire
 
 class TVSeriesDetailsViewModel {
     var selectedSeriesId: Int?
@@ -10,7 +9,7 @@ class TVSeriesDetailsViewModel {
     private var favorites: [TVSeries] = []
     
     func fetchTVSeriesDetails() {
-        TVSeriesDetailsManager.fetchTVSeriesDetails(id: selectedSeriesId ?? 0) { seriesDetails, errorMessage in
+        TVSeriesManager.shared.fetchTVSeriesDetails(id: selectedSeriesId ?? 0) { seriesDetails, errorMessage in
             if let errorMessage = errorMessage {
                 self.error?(errorMessage)
                 return

@@ -46,13 +46,16 @@ class FavoritesViewController: UIViewController {
 
 extension FavoritesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.section == 0 {  
-            let movie = viewModel.favorites[indexPath.row]
-            let movieDetailsVC = MovieDetailsTableViewController(movie.id)
+        let media: MediaData
+        if indexPath.section == 0 {
+            let filteredMovies = viewModel.favorites.filter { $0.type == "movie" }
+            media = filteredMovies[indexPath.row]
+            let movieDetailsVC = MovieDetailsTableViewController(media.id)
             navigationController?.pushViewController(movieDetailsVC, animated: true)
         } else {
-            let tvSeries = viewModel.favorites[indexPath.row]
-            let tvSeriesDetailsVC = TVSeriesDetailsTableViewController(tvSeries.id)
+            let filteredTVSeries = viewModel.favorites.filter { $0.type == "series" }
+            media = filteredTVSeries[indexPath.row]
+            let tvSeriesDetailsVC = TVSeriesDetailsTableViewController(media.id)
             navigationController?.pushViewController(tvSeriesDetailsVC, animated: true)
         }
     }
@@ -63,25 +66,23 @@ extension FavoritesViewController: UITableViewDelegate {
 }
 
 extension FavoritesViewController: UITableViewDataSource {
-    
     func numberOfSections(in tableView: UITableView) -> Int {
         var sections = 0
-        if !viewModel.favorites.filter({ $0.type == "movie" }).isEmpty {
+        if viewModel.favorites.contains(where: { $0.type == "movie" }) {
             sections += 1
         }
-        if !viewModel.favorites.filter({ $0.type == "series" }).isEmpty {
+        if viewModel.favorites.contains(where: { $0.type == "series" }) {
             sections += 1
         }
         return sections
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 && !viewModel.favorites.filter({ $0.type == "movie" }).isEmpty {
+        if section == 0 {
             return viewModel.favorites.filter { $0.type == "movie" }.count
-        } else if section == 1 && !viewModel.favorites.filter({ $0.type == "series" }).isEmpty {
+        } else {
             return viewModel.favorites.filter { $0.type == "series" }.count
         }
-        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

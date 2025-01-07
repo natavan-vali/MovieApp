@@ -1,5 +1,4 @@
 import UIKit
-import Alamofire
 
 class MovieDetailsViewModel {
     var selectedMovieId: Int?
@@ -10,7 +9,7 @@ class MovieDetailsViewModel {
     private var favorites: [Movie] = []
     
     func fetchMovieDetails() {
-        MovieDetailsManager.fetchMovieDetails(id: selectedMovieId ?? 0) { movieDetails, errorMessage in
+        MoviesManager.shared.fetchMovieDetails(id: selectedMovieId ?? 0) { movieDetails, errorMessage in
             if let errorMessage = errorMessage {
                 self.error?(errorMessage)
                 return
