@@ -1,6 +1,10 @@
 import Foundation
 
 class PeopleManager {
+    static let shared = PeopleManager()
+    
+    private init() {}
+    
     func fetchPopularPeople(page: Int, completion: @escaping ([Person]?, String?) -> Void) {
         guard let url = NetworkConstants.createURL(for: "person", endpoint: "popular") else {
             completion(nil, "Invalid URL")
@@ -20,7 +24,7 @@ class PeopleManager {
         }
     }
     
-    static func fetchPersonDetails(id: Int, completion: @escaping (Person?, String?) -> Void) {
+    func fetchPersonDetails(id: Int, completion: @escaping (Person?, String?) -> Void) {
         let urlString = "\(NetworkConstants.baseURL)/person/\(id)?api_key=\(NetworkConstants.apiKey)&language=en-US"
         
         guard URL(string: urlString) != nil else {

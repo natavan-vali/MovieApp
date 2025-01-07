@@ -1,7 +1,6 @@
 import Foundation
 
 class SearchViewModel {
-    private let searchManager = SearchManager()
     var movies: [Movie] = []
     var searchHistory: [String] = [] {
         didSet {
@@ -16,7 +15,7 @@ class SearchViewModel {
         }
     
     func searchMovies(query: String) {
-        searchManager.searchMovies(query: query) { [weak self] results, error in
+        SearchManager.shared.searchMovies(query: query) { [weak self] results, error in
             DispatchQueue.main.async {
                 if let error = error {
                     self?.onError?(error)

@@ -19,7 +19,7 @@ class TVSeriesViewModel {
     }
     
     private func getSeriesItems(endpoint: TVSeriesEndPoint) {
-        TVSeriesManager.fetchSeries(endpoint: endpoint) { [weak self] series, errorMessage in
+        TVSeriesManager.shared.fetchSeries(endpoint: endpoint) { [weak self] series, errorMessage in
             if let errorMessage = errorMessage {
                 self?.error?(errorMessage)
             } else if let series = series {

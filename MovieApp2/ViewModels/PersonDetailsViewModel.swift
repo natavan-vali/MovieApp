@@ -8,7 +8,7 @@ class PersonDetailsViewModel {
     var error: ((String) -> Void)?
     
     func fetchPersonDetails() {
-        PeopleManager.fetchPersonDetails(id: selectedPersonId ?? 0) { personDetails, errorMessage in
+        PeopleManager.shared.fetchPersonDetails(id: selectedPersonId ?? 0) { personDetails, errorMessage in
             if let errorMessage = errorMessage {
                 DispatchQueue.main.async {
                     self.error?(errorMessage)

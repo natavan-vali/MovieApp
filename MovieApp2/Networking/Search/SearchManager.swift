@@ -1,6 +1,10 @@
 import Foundation
 
 class SearchManager {
+    static let shared = SearchManager()
+    
+    private init() {}
+    
     func searchMovies(query: String, completion: @escaping ([Movie]?, String?) -> Void) {
         guard let url = NetworkConstants.createURL(for: "search", endpoint: "movie") else {
             completion(nil, "Invalid URL")

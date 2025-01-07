@@ -10,7 +10,6 @@ struct MediaData {
 
 class FavoritesViewModel {
     private var db = Firestore.firestore()
-    private var movieDetailsManager = MovieDetailsManager()
     var favorites: [MediaData] = []
     var success: (() -> Void)?
     var error: ((String) -> Void)?

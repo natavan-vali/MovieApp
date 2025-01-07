@@ -19,7 +19,7 @@ class MoviesViewModel {
     }
     
     private func getMovieItems(endpoint: MoviesEndpoint) {
-        MoviesManager.fetchMovies(endpoint: endpoint) { [weak self] movies, errorMessage in
+        MoviesManager.shared.fetchMovies(endpoint: endpoint) { [weak self] movies, errorMessage in
             if let errorMessage = errorMessage {
                 self?.error?(errorMessage)
             } else if let movies = movies {
