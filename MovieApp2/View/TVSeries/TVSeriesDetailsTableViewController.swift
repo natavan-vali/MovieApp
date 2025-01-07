@@ -1,12 +1,11 @@
 import UIKit
-import FirebaseAuth
 
 class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var viewModel = TVSeriesDetailsViewModel()
     private var tableView: UITableView!
-    var favoritesViewModel = FavoritesViewModel()
-    
+    var favorites: [MediaData] = []
+
     let favoritesButton: FavoritesButton = {
         let button = FavoritesButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -26,23 +25,26 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        guard let userId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = AuthManager.shared.getCurrentUserId() else { return }
 
         
         viewModel.fetchTVSeriesDetails()
+        
+        FirebaseManager.shared.fetchFavorites(userId) { [weak self] favorites, error in
+            if let error = error {
+                print("Error fetching favorites: \(error.localizedDescription)")
+                return
+            }
+            self?.favorites = favorites ?? []
+            self?.updateFavoritesButtonState(with: self?.favorites ?? [])
+        }
         
         viewModel.success = { [weak self] seriesDetails in
             DispatchQueue.main.async {
                 self?.viewModel.selectedSeries = seriesDetails
                 self?.setupTableView()
-            }
-        }
-        
-        favoritesViewModel.fetchFavorites(userId)
-        
-        favoritesViewModel.success = {
-            DispatchQueue.main.async {
-                self.updateFavoritesButtonState()
+                self?.updateFavoritesButtonState(with: self?.favorites ?? [])
+
             }
         }
         
@@ -53,28 +55,38 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         favoritesButton.onTap = { [weak self] in
             guard let self = self, let series = self.viewModel.selectedSeries else { return }
             
-            let seriesData = MediaData(id: series.id,
+            let seriesData = MediaData(id:  series.id,
                                       title: series.title ?? "",
                                       type: "series",
                                       posterURL: series.posterURL)
-            
-            if self.favoritesViewModel.favorites.contains(where: { $0.id == seriesData.id }) {
-                self.favoritesViewModel.removeFromFavorites(seriesData, userId)
-                self.favoritesButton.setFavoriteState(false)
+                        
+            if self.favorites.contains(where: { $0.id == seriesData.id }) {
+                FirebaseManager.shared.removeFavorite(seriesData.id, userId) { error in
+                    if let error = error {
+                        print("Error removing favorite: \(error.localizedDescription)")
+                    } else {
+                        self.favoritesButton.setFavoriteState(false)
+                    }
+                }
             } else {
-                self.favoritesViewModel.addToFavorites(seriesData, userId)
-                self.favoritesButton.setFavoriteState(true)
+                FirebaseManager.shared.addFavorite(seriesData, userId) { error in
+                    if let error = error {
+                        print("Error adding favorite: \(error.localizedDescription)")
+                    } else {
+                        self.favoritesButton.setFavoriteState(true)
+                    }
+                }
             }
         }
+        
         
         let favoritesBarButtonItem = UIBarButtonItem(customView: favoritesButton)
         navigationItem.rightBarButtonItem = favoritesBarButtonItem
     }
     
-    private func updateFavoritesButtonState() {
+    private func updateFavoritesButtonState(with favorites: [MediaData]) {
         guard let series = viewModel.selectedSeries else { return }
-            
-        let isFavorite = favoritesViewModel.favorites.contains(where: { $0.id == series.id })
+        let isFavorite = favorites.contains(where: { $0.id == series.id })
         favoritesButton.setFavoriteState(isFavorite)
     }
     

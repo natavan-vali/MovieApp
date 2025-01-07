@@ -1,5 +1,4 @@
 import UIKit
-import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
@@ -107,20 +106,26 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func handleLogin() {
-        guard let email = emailTextField.text, let password = passwordTextField.text else {
+        guard let email = emailTextField.text, let password = passwordTextField.text, !email.isEmpty, !password.isEmpty else {
             showErrorAlert(message: "Please fill in all fields.")
             return
         }
-        viewModel.login(email: email, password: password)
-        let homePageVC = MainTabBarController()
-        navigationController?.pushViewController(homePageVC, animated: true)
+
+        AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
+            switch result {
+            case .success:
+                self?.navigateToMainTabBar()
+            case .failure(let error):
+                self?.showErrorAlert(message: error.localizedDescription)
+            }
+        }
     }
-    
+
     @objc private func handleCreateAccount() {
         let createAccountVC = CreateAccountViewController()
         navigationController?.pushViewController(createAccountVC, animated: true)
     }
-    
+
     func navigateToMainTabBar() {
         guard let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate else { return }
         let mainTabBarController = MainTabBarController()

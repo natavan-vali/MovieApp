@@ -1,5 +1,4 @@
 import UIKit
-import FirebaseAuth
 
 class CreateAccountViewController: UIViewController {
     
@@ -93,17 +92,19 @@ class CreateAccountViewController: UIViewController {
             return
         }
         
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
-            if let error = error {
+        AuthManager.shared.signUp(email: email, password: password) { [weak self] result in
+            switch result {
+            case .success:
+                self?.navigateToMainApp()
+            case .failure(let error):
                 self?.showErrorAlert(message: error.localizedDescription)
-                return
             }
-            self?.navigateToMainApp()
         }
     }
-    
+
     private func navigateToMainApp() {
+        guard let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate else { return }
         let mainTabBarController = MainTabBarController()
-        navigationController?.pushViewController(mainTabBarController, animated: true)
+        sceneDelegate.window?.rootViewController = mainTabBarController
     }
 }

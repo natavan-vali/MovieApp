@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import Firebase
-import FirebaseAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -18,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard (scene is UIWindowScene) else { return }
         
-        if Auth.auth().currentUser != nil {
+        if AuthManager.shared.isUserSignedIn() {
             let mainViewController = MainTabBarController()
             window?.rootViewController = mainViewController
         } else {

@@ -1,5 +1,4 @@
 import UIKit
-import FirebaseAuth
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private let tableView: UITableView = {
@@ -39,11 +38,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        do {
-            try Auth.auth().signOut()
-            navigateToLogin()
-        } catch {
-            print("Error signing out: \(error.localizedDescription)")
+        AuthManager.shared.signOut { [weak self] result in
+            switch result {
+            case .success:
+                self?.navigateToLogin()
+            case .failure(let error):
+                print("Error signing out: \(error.localizedDescription)")
+            }
         }
     }
     
