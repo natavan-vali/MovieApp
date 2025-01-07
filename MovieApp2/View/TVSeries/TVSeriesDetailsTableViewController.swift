@@ -9,6 +9,7 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
     let favoritesButton: FavoritesButton = {
         let button = FavoritesButton()
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
         return button
     }()
     
@@ -37,14 +38,13 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
             }
             self?.favorites = favorites ?? []
             self?.updateFavoritesButtonState(with: self?.favorites ?? [])
+            self?.favoritesButton.isHidden = false
         }
         
         viewModel.success = { [weak self] seriesDetails in
             DispatchQueue.main.async {
                 self?.viewModel.selectedSeries = seriesDetails
                 self?.setupTableView()
-                self?.updateFavoritesButtonState(with: self?.favorites ?? [])
-
             }
         }
         
@@ -54,21 +54,24 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
 
         favoritesButton.onTap = { [weak self] in
             guard let self = self, let series = self.viewModel.selectedSeries else { return }
-            
-            let seriesData = MediaData(id:  series.id,
-                                      title: series.title ?? "",
-                                      type: "series",
-                                      posterURL: series.posterURL)
                         
-            if self.favorites.contains(where: { $0.id == seriesData.id }) {
-                FirebaseManager.shared.removeFavorite(seriesData.id, userId) { error in
+            if self.favorites.contains(where: { $0.id == series.id }) {
+                FirebaseManager.shared.removeFavorite(series.id, userId) { error in
                     if let error = error {
                         print("Error removing favorite: \(error.localizedDescription)")
                     } else {
                         self.favoritesButton.setFavoriteState(false)
                     }
                 }
+                
+                favorites.removeAll(where: { $0.id == series.id })
             } else {
+                let seriesData = MediaData(id:  series.id,
+                                          title: series.title ?? "",
+                                          type: "series",
+                                           posterURL: series.posterURL,
+                                           createdAt: Date())
+                
                 FirebaseManager.shared.addFavorite(seriesData, userId) { error in
                     if let error = error {
                         print("Error adding favorite: \(error.localizedDescription)")
@@ -76,6 +79,8 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
                         self.favoritesButton.setFavoriteState(true)
                     }
                 }
+                
+                favorites.append(seriesData)
             }
         }
         

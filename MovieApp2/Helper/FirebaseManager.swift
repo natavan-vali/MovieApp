@@ -14,7 +14,8 @@ class FirebaseManager {
             "userId": userId,
             "title": media.title,
             "type": media.type,
-            "posterPath": media.posterURL
+            "posterPath": media.posterURL,
+            "createdAt": media.createdAt
         ], completion: completion)
     }
     
@@ -46,7 +47,8 @@ class FirebaseManager {
                         return MediaData(id: data["id"] as? Int ?? 0,
                                          title: data["title"] as? String ?? "",
                                          type: data["type"] as? String ?? "",
-                                         posterURL: data["posterPath"] as? String ?? "")
+                                         posterURL: data["posterPath"] as? String ?? "",
+                                         createdAt: data["createdAt"] as? Date ?? Date())
                     } ?? []
                     completion(favorites, nil)
                 }
