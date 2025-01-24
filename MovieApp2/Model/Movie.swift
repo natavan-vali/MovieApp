@@ -20,7 +20,7 @@ struct Movie: Codable, ContentCollectionViewCellProtocol {
     
     var posterURL: String {
         if let posterPath = posterPath {
-            return "https://image.tmdb.org/t/p/w500\(posterPath)"
+            return "\(NetworkConstants.imageBaseURL)\(posterPath)"
         } else {
             return "https://via.placeholder.com/150"
         }
@@ -28,7 +28,7 @@ struct Movie: Codable, ContentCollectionViewCellProtocol {
     
     var backdropURL: String {
         if let backdropPath = backdropPath {
-            return "https://image.tmdb.org/t/p/w500\(backdropPath)"
+            return "\(NetworkConstants.imageBaseURL)\(backdropPath)"
         } else {
             return "https://via.placeholder.com/500x280"
         }

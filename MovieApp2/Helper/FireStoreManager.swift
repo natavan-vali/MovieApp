@@ -1,8 +1,8 @@
 import Foundation
 import FirebaseFirestore
 
-class FirebaseManager {
-    static let shared = FirebaseManager()
+class FireStoreManager {
+    static let shared = FireStoreManager()
     
     private let db = Firestore.firestore()
     
@@ -31,6 +31,22 @@ class FirebaseManager {
                         document.reference.delete()
                     }
                     completion(nil)
+                }
+            }
+    }
+    
+    func checkMediaFavorite(mediaId: Int, userId: String, mediaType: String, completion: @escaping (Bool) -> Void) {
+        db.collection("favorites")
+            .whereField("id", isEqualTo: mediaId)
+            .whereField("userId", isEqualTo: userId)
+            .whereField("type", isEqualTo: mediaType)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error checking favorite status: \(error.localizedDescription)")
+                    completion(false)
+                } else {
+                    let isFavorite = snapshot?.documents.count ?? 0 > 0
+                    completion(isFavorite)
                 }
             }
     }

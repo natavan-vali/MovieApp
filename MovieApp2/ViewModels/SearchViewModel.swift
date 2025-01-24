@@ -2,26 +2,43 @@ import Foundation
 
 class SearchViewModel {
     var movies: [Movie] = []
+    var tvSeries: [TVSeries] = []
     var searchHistory: [String] = [] {
         didSet {
             saveSearchHistory()
         }
     }
     var onMoviesUpdated: (() -> Void)?
+    var onTVSeriesUpdated: (() -> Void)?
     var onError: ((String) -> Void)?
     
     init() {
-            loadSearchHistory()
-        }
+        loadSearchHistory()
+    }
     
-    func searchMovies(query: String) {
-        SearchManager.shared.searchMovies(query: query) { [weak self] results, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self?.onError?(error)
-                } else {
-                    self?.movies = results ?? []
-                    self?.onMoviesUpdated?()
+    func search(query: String, type: SearchType) {
+        switch type {
+        case .movie:
+            SearchManager.shared.searchItems(query: query, type: .movie) { [weak self] (response: MovieResponse?, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self?.onError?(error)
+                    } else {
+                        self?.movies = response?.results ?? []
+                        self?.onMoviesUpdated?()
+                    }
+                }
+            }
+            
+        case .tvSeries:
+            SearchManager.shared.searchItems(query: query, type: .tvSeries) { [weak self] (response: TVSeriesResponse?, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self?.onError?(error)
+                    } else {
+                        self?.tvSeries = response?.results ?? []
+                        self?.onTVSeriesUpdated?()
+                    }
                 }
             }
         }
@@ -33,13 +50,13 @@ class SearchViewModel {
     }
     
     private func loadSearchHistory() {
-            if let savedHistory = UserDefaults.standard.array(forKey: "searchHistory") as? [String] {
-                searchHistory = savedHistory
-            }
+        if let savedHistory = UserDefaults.standard.array(forKey: "searchHistory") as? [String] {
+            searchHistory = savedHistory
         }
-        
-        private func saveSearchHistory() {
-            UserDefaults.standard.set(searchHistory, forKey: "searchHistory")
-        }
+    }
+    
+    private func saveSearchHistory() {
+        UserDefaults.standard.set(searchHistory, forKey: "searchHistory")
+    }
 }
 

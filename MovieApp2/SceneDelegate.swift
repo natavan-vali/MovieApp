@@ -11,19 +11,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
     
-    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        
         guard (scene is UIWindowScene) else { return }
         
         if AuthManager.shared.isUserSignedIn() {
-            let mainViewController = MainTabBarController()
-            window?.rootViewController = mainViewController
+            switchToMainTabBar()
         } else {
             let navigationController = UINavigationController(rootViewController: LoginViewController())
             window?.rootViewController = navigationController
         }
         window?.makeKeyAndVisible()
+    }
+    
+    func switchToMainTabBar() {
+        let mainTabBarController = MainTabBarController()
+        window?.rootViewController = mainTabBarController
     }
     
     func sceneDidDisconnect(_ scene: UIScene) {

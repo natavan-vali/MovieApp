@@ -1,6 +1,6 @@
 import Foundation
 
-class PeopleManager {
+class PeopleManager: PeopleUseCase {
     static let shared = PeopleManager()
     
     private init() {}

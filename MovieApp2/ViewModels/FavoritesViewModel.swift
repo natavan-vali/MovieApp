@@ -6,7 +6,7 @@ class FavoritesViewModel {
     var error: ((String) -> Void)?
     
     func addToFavorites(_ media: MediaData, _ userId: String) {
-        FirebaseManager.shared.addFavorite(media, userId) { error in
+        FireStoreManager.shared.addFavorite(media, userId) { error in
             if let error = error {
                 print("Error adding favorite: \(error.localizedDescription)")
                 self.error?(error.localizedDescription)
@@ -18,7 +18,7 @@ class FavoritesViewModel {
     }
     
     func removeFromFavorites(_ media: MediaData, _ userId: String) {
-        FirebaseManager.shared.removeFavorite(media.id, userId) { error in
+        FireStoreManager.shared.removeFavorite(media.id, userId) { error in
             if let error = error {
                 print("Error removing favorite: \(error.localizedDescription)")
                 self.error?(error.localizedDescription)
@@ -30,7 +30,7 @@ class FavoritesViewModel {
     }
     
     func fetchFavorites(_ userId: String) {
-        FirebaseManager.shared.fetchFavorites(userId) { favorites, error in
+        FireStoreManager.shared.fetchFavorites(userId) { favorites, error in
             if let error = error {
                 print("Error fetching favorites: \(error.localizedDescription)")
                 self.error?(error.localizedDescription)

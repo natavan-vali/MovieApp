@@ -25,4 +25,16 @@ class TVSeriesDetailsViewModel {
             }
         }
     }
+    
+    func isSeriesFavorite(completion: @escaping (Bool) -> Void) {
+        guard let movieId = selectedSeriesId,
+              let userId = AuthManager.shared.getCurrentUserId() else {
+            completion(false)
+            return
+        }
+        
+        FireStoreManager.shared.checkMediaFavorite(mediaId: movieId, userId: userId, mediaType: "series") { isFavorite in
+            completion(isFavorite)
+        }
+    }
 }

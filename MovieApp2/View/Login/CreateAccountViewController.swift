@@ -104,7 +104,6 @@ class CreateAccountViewController: UIViewController {
 
     private func navigateToMainApp() {
         guard let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate else { return }
-        let mainTabBarController = MainTabBarController()
-        sceneDelegate.window?.rootViewController = mainTabBarController
+        sceneDelegate.switchToMainTabBar()
     }
 }

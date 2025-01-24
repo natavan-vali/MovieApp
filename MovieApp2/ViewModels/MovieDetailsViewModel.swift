@@ -25,4 +25,17 @@ class MovieDetailsViewModel {
             }
         }
     }
+    
+    func isMovieFavorite(completion: @escaping (Bool) -> Void) {
+        guard let movieId = selectedMovieId,
+              let userId = AuthManager.shared.getCurrentUserId() else {
+            completion(false)
+            return
+        }
+        
+        FireStoreManager.shared.checkMediaFavorite(mediaId: movieId, userId: userId, mediaType: "movie") { isFavorite in
+            completion(isFavorite)
+        }
+    }
+
 }
