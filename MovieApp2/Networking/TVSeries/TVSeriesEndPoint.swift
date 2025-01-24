@@ -1,6 +1,6 @@
 import Foundation
 
-enum TVSeriesEndPoint: String {
+enum TVSeriesEndPoint: String, Endpoint {
     case airingToday = "airing_today"
     case onTheAir = "on_the_air"
     case popular = "popular"

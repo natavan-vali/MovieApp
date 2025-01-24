@@ -3,6 +3,7 @@ import Alamofire
 
 class NetworkConstants {
     static let baseURL = "https://api.themoviedb.org/3"
+    static let imageBaseURL = "https://image.tmdb.org/t/p/w500"
     static let apiKey = "4cca7f13106bf39f3d0af6d96fffb3e5"
     static let language = "en-US"
     

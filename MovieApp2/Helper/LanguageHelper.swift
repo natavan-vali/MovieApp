@@ -10,6 +10,7 @@ struct LanguageHelper {
         "ru": "Russian",
         "ja": "Japanese",
         "ko": "Korean",
+        "cn": "Chinese",
         "zh": "Chinese",
         "ar": "Arabic",
         "pt": "Portuguese",
@@ -29,7 +30,9 @@ struct LanguageHelper {
         "vi": "Vietnamese",
         "he": "Hebrew",
         "uk": "Ukrainian",
-        "id": "Indonesian"
+        "id": "Indonesian",
+        "af": "Afrikaans",
+        "tl": "Tagalog"
     ]
     
     static func languageName(for code: String?) -> String {

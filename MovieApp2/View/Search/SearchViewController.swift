@@ -25,13 +25,13 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         view.addGestureRecognizer(tapGestureRecognizer)
         
         searchBar.delegate = self
-        searchBar.placeholder = "Search for movies"
+        searchBar.placeholder = "Search for movies and TV series"
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchBar)
         
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MovieCell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SearchCell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
         
@@ -57,6 +57,11 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
             self?.tableView.reloadData()
         }
         
+        viewModel.onTVSeriesUpdated = { [weak self] in
+            self?.isSearching = true
+            self?.tableView.reloadData()
+        }
+        
         viewModel.onError = { errorMessage in
             print("Error: \(errorMessage)")
         }
@@ -67,7 +72,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
             isSearching = false
             tableView.reloadData()
         } else {
-            viewModel.searchMovies(query: searchText)
+            viewModel.search(query: searchText, type: .movie)
+            viewModel.search(query: searchText, type: .tvSeries)
             isSearching = true
         }
     }
@@ -75,7 +81,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let query = searchBar.text, !query.isEmpty else { return }
-        viewModel.searchMovies(query: query)
+        viewModel.search(query: query, type: .movie)
+        viewModel.search(query: query, type: .tvSeries)
         viewModel.addToSearchHistory(query)
         isSearching = true
         searchBar.resignFirstResponder()
@@ -89,28 +96,41 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if isSearching {
-            let selectedMovie = viewModel.movies[indexPath.row]
-            viewModel.addToSearchHistory(selectedMovie.title ?? "")
-            let detailVC = MovieDetailsTableViewController(selectedMovie.id)
-            navigationController?.pushViewController(detailVC, animated: true)
+            if indexPath.row < viewModel.movies.count {
+                let selectedMovie = viewModel.movies[indexPath.row]
+                viewModel.addToSearchHistory(selectedMovie.title ?? "")
+                let detailVC = MovieDetailsTableViewController(selectedMovie.id)
+                navigationController?.pushViewController(detailVC, animated: true)
+            } else {
+                let selectedTVSeries = viewModel.tvSeries[indexPath.row - viewModel.movies.count]
+                viewModel.addToSearchHistory(selectedTVSeries.title ?? "")
+                let detailVC = TVSeriesDetailsTableViewController(selectedTVSeries.id)
+                navigationController?.pushViewController(detailVC, animated: true)
+            }
         } else {
             let query = viewModel.searchHistory[indexPath.row]
             searchBar.text = query
-            viewModel.searchMovies(query: query)
+            viewModel.search(query: query, type: .movie)
+            viewModel.search(query: query, type: .tvSeries)
             isSearching = true
         }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return isSearching ? viewModel.movies.count : viewModel.searchHistory.count
+        return isSearching ? viewModel.movies.count + viewModel.tvSeries.count : viewModel.searchHistory.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SearchCell", for: indexPath)
         
         if isSearching {
-            let movie = viewModel.movies[indexPath.row]
-            cell.textLabel?.text = movie.title
+            if indexPath.row < viewModel.movies.count {
+                let movie = viewModel.movies[indexPath.row]
+                cell.textLabel?.text = movie.title
+            } else {
+                let tvSeries = viewModel.tvSeries[indexPath.row - viewModel.movies.count]
+                cell.textLabel?.text = tvSeries.title
+            }
         } else {
             let query = viewModel.searchHistory[indexPath.row]
             cell.textLabel?.text = query

@@ -11,7 +11,7 @@ struct Person: Codable {
     
     var profileImageURL: URL? {
         guard let profilePath = profilePath else { return nil }
-        return URL(string: "https://image.tmdb.org/t/p/w500\(profilePath)")
+        return URL(string: "\(NetworkConstants.imageBaseURL)\(profilePath)")
     }
     
     enum CodingKeys: String, CodingKey {

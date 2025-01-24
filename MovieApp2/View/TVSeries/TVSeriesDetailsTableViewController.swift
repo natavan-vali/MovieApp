@@ -31,15 +31,53 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         
         viewModel.fetchTVSeriesDetails()
         
-        FirebaseManager.shared.fetchFavorites(userId) { [weak self] favorites, error in
-            if let error = error {
-                print("Error fetching favorites: \(error.localizedDescription)")
-                return
+        viewModel.isSeriesFavorite { [weak self] isFavorite in
+            DispatchQueue.main.async {
+                self?.favoritesButton.setFavoriteState(isFavorite)
+                self?.favoritesButton.isHidden = false
             }
-            self?.favorites = favorites ?? []
-            self?.updateFavoritesButtonState(with: self?.favorites ?? [])
-            self?.favoritesButton.isHidden = false
         }
+        
+        favoritesButton.onTap = { [weak self] in
+            guard let self = self, let series = self.viewModel.selectedSeries else { return }
+
+            self.viewModel.isSeriesFavorite { [weak self] isFavorite in
+                guard let self = self else { return }
+                
+                if isFavorite {
+                    FireStoreManager.shared.removeFavorite(series.id, userId) { error in
+                        if let error = error {
+                            print("Error removing favorite: \(error.localizedDescription)")
+                        } else {
+                            DispatchQueue.main.async {
+                                self.favoritesButton.setFavoriteState(false)
+                            }
+                        }
+                    }
+                } else {
+                    let seriesData = MediaData(
+                        id: series.id,
+                        title: series.title ?? "",
+                        type: "series",
+                        posterURL: series.posterURL,
+                        createdAt: Date()
+                    )
+                    
+                    FireStoreManager.shared.addFavorite(seriesData, userId) { error in
+                        if let error = error {
+                            print("Error adding favorite: \(error.localizedDescription)")
+                        } else {
+                            DispatchQueue.main.async {
+                                self.favoritesButton.setFavoriteState(true)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        let favoritesBarButtonItem = UIBarButtonItem(customView: favoritesButton)
+        navigationItem.rightBarButtonItem = favoritesBarButtonItem
         
         viewModel.success = { [weak self] seriesDetails in
             DispatchQueue.main.async {
@@ -51,48 +89,6 @@ class TVSeriesDetailsTableViewController: UIViewController, UITableViewDelegate,
         viewModel.error = { [weak self] errorMessage in
             self?.showErrorAlert(message: errorMessage)
         }
-
-        favoritesButton.onTap = { [weak self] in
-            guard let self = self, let series = self.viewModel.selectedSeries else { return }
-                        
-            if self.favorites.contains(where: { $0.id == series.id }) {
-                FirebaseManager.shared.removeFavorite(series.id, userId) { error in
-                    if let error = error {
-                        print("Error removing favorite: \(error.localizedDescription)")
-                    } else {
-                        self.favoritesButton.setFavoriteState(false)
-                    }
-                }
-                
-                favorites.removeAll(where: { $0.id == series.id })
-            } else {
-                let seriesData = MediaData(id:  series.id,
-                                          title: series.title ?? "",
-                                          type: "series",
-                                           posterURL: series.posterURL,
-                                           createdAt: Date())
-                
-                FirebaseManager.shared.addFavorite(seriesData, userId) { error in
-                    if let error = error {
-                        print("Error adding favorite: \(error.localizedDescription)")
-                    } else {
-                        self.favoritesButton.setFavoriteState(true)
-                    }
-                }
-                
-                favorites.append(seriesData)
-            }
-        }
-        
-        
-        let favoritesBarButtonItem = UIBarButtonItem(customView: favoritesButton)
-        navigationItem.rightBarButtonItem = favoritesBarButtonItem
-    }
-    
-    private func updateFavoritesButtonState(with favorites: [MediaData]) {
-        guard let series = viewModel.selectedSeries else { return }
-        let isFavorite = favorites.contains(where: { $0.id == series.id })
-        favoritesButton.setFavoriteState(isFavorite)
     }
     
     private func setupTableView() {

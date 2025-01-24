@@ -7,4 +7,3 @@ struct MediaData {
     var posterURL: String
     var createdAt: Date
 }
-
