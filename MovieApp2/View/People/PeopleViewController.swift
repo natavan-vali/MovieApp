@@ -16,7 +16,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Famous People"
+        title = "Celebrities"
         
         setupUI()
         bindViewModel()

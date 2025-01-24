@@ -5,30 +5,20 @@ class SearchManager: SearchUseCase {
     
     private init() {}
     
-    func searchItems<T: Decodable>(query: String, type: SearchType, completion: @escaping (T?, String?) -> Void) {
-        let endpoint: String
-        let parameters: [String: Any]
-        
-        switch type {
-        case .movie:
-            endpoint = "movie"
-            parameters = [
-                "query": query,
-                "page": 1
-            ]
-        case .tvSeries:
-            endpoint = "tv"
-            parameters = [
-                "query": query,
-                "include_adult": false,
-                "language": "en-US",
-                "page": 1
-            ]
-        }
-        
-        guard let url = NetworkConstants.createURL(for: "search", endpoint: endpoint) else {
+    func searchItems<T: Decodable>(query: String, type: SearchEndpoint, completion: @escaping (T?, String?) -> Void) {
+        guard let url = type.url else {
             completion(nil, "Invalid URL")
             return
+        }
+        
+        var parameters: [String: Any] = [
+            "query": query,
+            "page": 1
+        ]
+        
+        if type == .tvSeries {
+            parameters["include_adult"] = false
+            parameters["language"] = NetworkConstants.language
         }
         
         NetworkManager.shared.fetch(urlString: url.absoluteString, parameters: parameters) { (response: T?, error) in

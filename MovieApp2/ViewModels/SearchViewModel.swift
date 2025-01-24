@@ -16,7 +16,7 @@ class SearchViewModel {
         loadSearchHistory()
     }
     
-    func search(query: String, type: SearchType) {
+    func search(query: String, type: SearchEndpoint) {
         switch type {
         case .movie:
             SearchManager.shared.searchItems(query: query, type: .movie) { [weak self] (response: MovieResponse?, error) in

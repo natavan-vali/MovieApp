@@ -6,7 +6,7 @@ class PeopleManager: PeopleUseCase {
     private init() {}
     
     func fetchPopularPeople(page: Int, completion: @escaping ([Person]?, String?) -> Void) {
-        guard let url = NetworkConstants.createURL(for: "person", endpoint: "popular") else {
+        guard let url = PeopleEndpoint.popular.url else {
             completion(nil, "Invalid URL")
             return
         }
@@ -25,14 +25,12 @@ class PeopleManager: PeopleUseCase {
     }
     
     func fetchPersonDetails(id: Int, completion: @escaping (Person?, String?) -> Void) {
-        let urlString = "\(NetworkConstants.baseURL)/person/\(id)?api_key=\(NetworkConstants.apiKey)&language=en-US"
-        
-        guard URL(string: urlString) != nil else {
+        guard let url = PeopleEndpoint.personDetails.detailsURL(for: id) else {
             completion(nil, "Invalid URL")
             return
         }
         
-        NetworkManager.shared.fetch(urlString: urlString) { (result: Person?, errorMessage) in
+        NetworkManager.shared.fetch(urlString: url.absoluteString) { (result: Person?, errorMessage) in
             if let errorMessage = errorMessage {
                 completion(nil, errorMessage)
                 return

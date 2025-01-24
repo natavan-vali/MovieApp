@@ -22,6 +22,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         view.backgroundColor = .white
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGestureRecognizer.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGestureRecognizer)
         
         searchBar.delegate = self

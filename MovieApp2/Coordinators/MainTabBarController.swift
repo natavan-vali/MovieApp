@@ -2,32 +2,15 @@ import UIKit
 
 class MainTabBarController: UITabBarController {
     
+    private var mainCoordinator: MainCoordinator?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabBarAppearance()
-        setupTabBar()
+        
+        mainCoordinator = MainCoordinator(tabBarController: self)
+        mainCoordinator?.start()
     }
-    
-    func setupTabBar() {
-        let moviesVC = MoviesViewController()
-        let moviesNavVC = UINavigationController(rootViewController: moviesVC)
-        moviesNavVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(named: "movies"), tag: 0)
-        
-        let tvShowsVC = TVSeriesViewController()
-        let tvShowsNavVC = UINavigationController(rootViewController: tvShowsVC)
-        tvShowsNavVC.tabBarItem = UITabBarItem(title: "TV Series", image: UIImage(named: "tv-series"), tag: 1)
-        
-        let searchVC = SearchViewController()
-        let searchNavVC = UINavigationController(rootViewController: searchVC)
-        searchNavVC.tabBarItem = UITabBarItem(title: "Search", image: UIImage(named: "search"), tag: 2)
-        
-        let peopleVC = PeopleViewController()
-        let peopleNavVC = UINavigationController(rootViewController: peopleVC)
-        peopleNavVC.tabBarItem = UITabBarItem(title: "People", image: UIImage(named: "people"), tag: 3)
-        
-        viewControllers = [moviesNavVC, tvShowsNavVC, searchNavVC, peopleNavVC]
-    }
-
     
     func setupTabBarAppearance() {
         let appearance = UITabBarAppearance()
