@@ -20,8 +20,28 @@ class MovieDetailsViewModel {
                 return
             }
             
-            DispatchQueue.main.async {
-                self.success?(movieDetails)
+            let movie = MovieBuilder()
+                .setId(movieDetails.id)
+                .setTitle(movieDetails.title)
+                .setPosterPath(movieDetails.posterPath)
+                .setBackdropPath(movieDetails.backdropPath)
+                .setOverview(movieDetails.overview)
+                .setReleaseDate(movieDetails.releaseDate)
+                .setLanguage(movieDetails.language)
+                .setPopularity(movieDetails.popularity)
+                .setRating(movieDetails.rating)
+                .setGenres(movieDetails.genres)
+                .setRuntime(movieDetails.runtime)
+                .setProductionCompanies(movieDetails.productionCompanies)
+                .build()
+            
+            if let movie = movie {
+                self.selectedMovie = movie
+                DispatchQueue.main.async {
+                    self.success?(movie)
+                }
+            } else {
+                self.error?("Failed to create movie object.")
             }
         }
     }
@@ -37,5 +57,5 @@ class MovieDetailsViewModel {
             completion(isFavorite)
         }
     }
-
+    
 }

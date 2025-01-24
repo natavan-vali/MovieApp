@@ -24,7 +24,23 @@ class MoviesViewModel {
                 self?.error?(errorMessage)
             } else if let movies = movies {
                 let listTitle = self?.getTitle(for: endpoint) ?? "Unknown"
-                self?.items.append(.init(title: listTitle, movies: movies))
+                let movieModels = movies.map { movieData in
+                    MovieBuilder()
+                        .setId(movieData.id)
+                        .setTitle(movieData.title)
+                        .setPosterPath(movieData.posterPath)
+                        .setBackdropPath(movieData.backdropPath)
+                        .setOverview(movieData.overview)
+                        .setReleaseDate(movieData.releaseDate)
+                        .setLanguage(movieData.language)
+                        .setPopularity(movieData.popularity)
+                        .setRating(movieData.rating)
+                        .setGenres(movieData.genres)
+                        .setRuntime(movieData.runtime)
+                        .setProductionCompanies(movieData.productionCompanies)
+                        .build()
+                }
+                self?.items.append(.init(title: listTitle, movies: movieModels.compactMap { $0 }))
                 self?.success?()
             }
         }
