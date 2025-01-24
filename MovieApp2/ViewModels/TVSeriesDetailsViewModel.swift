@@ -20,8 +20,30 @@ class TVSeriesDetailsViewModel {
                 return
             }
     
-            DispatchQueue.main.async {
-                self.success?(seriesDetails)
+            let series = TVSeriesBuilder()
+                .setId(seriesDetails.id)
+                .setTitle(seriesDetails.title)
+                .setPosterPath(seriesDetails.posterPath)
+                .setBackdropPath(seriesDetails.backdropPath)
+                .setOverview(seriesDetails.overview)
+                .setReleaseDate(seriesDetails.releaseDate)
+                .setLanguage(seriesDetails.language)
+                .setPopularity(seriesDetails.popularity)
+                .setRating(seriesDetails.rating)
+                .setGenres(seriesDetails.genres)
+                .setRuntime(seriesDetails.runtime)
+                .setProductionCompanies(seriesDetails.productionCompanies)
+                .setNumberOfEpisodes(seriesDetails.numberOfEpisodes)
+                .setNumberOfSeasons(seriesDetails.numberOfSeasons)
+                .build()
+            
+            if let series = series {
+                self.selectedSeries = series
+                DispatchQueue.main.async {
+                    self.success?(series)
+                }
+            } else {
+                self.error?("Failed to create movie object.")
             }
         }
     }

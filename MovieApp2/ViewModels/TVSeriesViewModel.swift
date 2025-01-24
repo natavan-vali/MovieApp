@@ -24,7 +24,25 @@ class TVSeriesViewModel {
                 self?.error?(errorMessage)
             } else if let series = series {
                 let listTitle = self?.getTitle(for: endpoint) ?? "Unknown"
-                self?.items.append(.init(title: listTitle, series: series))
+                let seriesModels = series.map { seriesData in
+                    TVSeriesBuilder()
+                        .setId(seriesData.id)
+                        .setTitle(seriesData.title)
+                        .setPosterPath(seriesData.posterPath)
+                        .setBackdropPath(seriesData.backdropPath)
+                        .setOverview(seriesData.overview)
+                        .setReleaseDate(seriesData.releaseDate)
+                        .setLanguage(seriesData.language)
+                        .setPopularity(seriesData.popularity)
+                        .setRating(seriesData.rating)
+                        .setGenres(seriesData.genres)
+                        .setRuntime(seriesData.runtime)
+                        .setProductionCompanies(seriesData.productionCompanies)
+                        .setNumberOfSeasons(seriesData.numberOfSeasons)
+                        .setNumberOfEpisodes(seriesData.numberOfEpisodes)
+                        .build()
+                }
+                self?.items.append(.init(title: listTitle, series: seriesModels.compactMap { $0 }))
                 self?.success?()
             }
         }
